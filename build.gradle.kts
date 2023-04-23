@@ -22,7 +22,10 @@ publishing {
             groupId = project.group.toString()
             artifactId = rootProject.name
             version = project.version.toString()
+            val softwareComponent = components.first()
+            from(softwareComponent)
         }
+
     }
 }
 dependencies {
@@ -43,3 +46,4 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
