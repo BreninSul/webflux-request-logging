@@ -16,6 +16,14 @@ class WebClientLoggingRequestBodyInserter(
     }
 
     override fun insert(outputMessage: ClientHttpRequest, context: BodyInserter.Context): Mono<Void> {
+        outputMessage.beforeCommit {
+            //If no content (Rq without body) - BodyInserter will not be invoked. Have to invoke logging directly
+            val bodyExist = outputMessage.headers.contentLength > 0
+            if (!bodyExist) {
+                loggingUtils.writeRequest( request, null)
+            }
+            Mono.empty<Void>()
+        }
         return delegate.insert(
             WebClientLoggingClientHttpRequest(
                 request,

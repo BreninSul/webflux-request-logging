@@ -11,13 +11,13 @@ import reactor.core.publisher.Mono
 class SpringCloudGatewayLoggingFilter(
     protected val addIdHeader: Boolean,
     protected val utils:SpringCloudGatewayLoggingUtils,
-    protected val order: Int = Int.MIN_VALUE,
+    protected val orderValue: Int = Int.MIN_VALUE,
     protected val idHeader:String = "X-Request-Id",
     protected val startTimeAttribute:String = "startTime",
     ) : GlobalFilter, Ordered {
 
     override fun getOrder(): Int {
-        return order
+        return orderValue
     }
 
     override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {

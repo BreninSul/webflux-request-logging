@@ -60,9 +60,9 @@ open class SpringCloudGatewayLoggingUtils  (
         data: DataBuffer,
         startTime: Long?
     ) {
-        writeResponse(request,response,commonUtils.getContent(data,maxBodySize),startTime)
+        writeResponse(request,response,data,startTime)
     }
-    public fun writeResponse(
+    protected fun writeResponse(
         request: ServerHttpRequest,
         response: ServerHttpResponse,
         data: String?,
@@ -84,6 +84,12 @@ open class SpringCloudGatewayLoggingUtils  (
     }
     public fun writeRequest(
         request: ServerHttpRequest,
+        data: DataBuffer?
+    ) {
+        writeRequest(request,data)
+    }
+    public fun writeRequest(
+        request: ServerHttpRequest,
         data: String?
     ) {
         val headersString =
@@ -99,11 +105,6 @@ open class SpringCloudGatewayLoggingUtils  (
 
         logger.log(logString)
     }
-    public fun writeRequest(
-        request: ServerHttpRequest,
-        data: DataBuffer
-    ) {
-        writeRequest(request,commonUtils.getContent(data,maxBodySize))
-    }
+
 
 }

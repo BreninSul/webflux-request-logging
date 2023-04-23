@@ -4,6 +4,8 @@ import com.github.breninsul.webfluxlogging.CommonLoggingUtils
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
+import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 
@@ -22,6 +24,12 @@ open class WebClientLoggingUtils (
     }
     public fun writeRequest(
         request: ClientRequest,
+        data: DataBuffer?
+    ) {
+        writeRequest(request,commonUtils.getContent(data,maxBodySize))
+    }
+    protected fun writeRequest(
+        request: ClientRequest,
         data: String?,
     ) {
 
@@ -37,6 +45,14 @@ open class WebClientLoggingUtils (
         logger.log(logString)
     }
     public fun writeResponse(
+        request: ClientRequest,
+        response: ClientResponse,
+        data: DataBuffer?,
+        startTime: Long
+    ) {
+        writeResponse(request,response,commonUtils.getContent(data,maxBodySize),startTime)
+    }
+    protected fun writeResponse(
         request: ClientRequest,
         response: ClientResponse,
         data: String?,

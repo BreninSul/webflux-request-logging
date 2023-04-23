@@ -31,7 +31,7 @@ import org.springframework.web.reactive.result.view.ViewResolver
     havingValue = "false"
 )
 @AutoConfigureBefore(ErrorWebFluxAutoConfiguration::class)
-class SpringCloudLoggingAutoConfig {
+class SpringCloudGatewayLoggingAutoConfig {
     @Bean
     @ConditionalOnMissingBean
     fun getCommonLoggingUtils(
@@ -56,7 +56,7 @@ class SpringCloudLoggingAutoConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    fun getWebClientLogging(
+    fun getSpringCloudGatewayLoggingFilter(
         @Value("\${com.github.breninsul.webfluxlogging.logging.add_id_header.spring_cloud_gateway:true}") addIdHeader: Boolean,
         springCloudGatewayLoggingUtils: SpringCloudGatewayLoggingUtils,
         ): SpringCloudGatewayLoggingFilter {
@@ -65,7 +65,7 @@ class SpringCloudLoggingAutoConfig {
 
     @Bean
     @Order(-1)
-    fun getErrorWebExceptionHandler(
+    fun getSpringCloudGatewayLoggingErrorWebExceptionHandler(
         @Value("\${com.github.breninsul.webfluxlogging.logging.max_body_size.spring_cloud_gateway:10000}") maxBodySize: Int,
         @Value("\${com.github.breninsul.webfluxlogging.logging.log_time.spring_cloud_gateway:true}") addIdHeader: Boolean,
         @Value("\${com.github.breninsul.webfluxlogging.logging.log_time.spring_cloud_gateway:true}") logTime: Boolean,
@@ -81,7 +81,6 @@ class SpringCloudLoggingAutoConfig {
         serverProperties: ServerProperties,
         utils: SpringCloudGatewayLoggingUtils,
         ): SpringCloudGatewayLoggingErrorWebExceptionHandler {
-        val logger: Logger = LoggerFactory.getLogger(loggerClass)
         val handler= SpringCloudGatewayLoggingErrorWebExceptionHandler(addIdHeader,utils,errorAttributes,webProperties.resources,serverProperties.error,applicationContext)
         handler.setViewResolvers(viewResolvers.orderedStream().toList())
         handler.setMessageWriters(serverCodecConfigurer.writers)

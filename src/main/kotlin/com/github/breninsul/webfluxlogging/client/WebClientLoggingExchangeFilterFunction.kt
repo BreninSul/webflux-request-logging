@@ -3,6 +3,7 @@ package com.github.breninsul.webfluxlogging.client
 import org.slf4j.Logger
 import org.slf4j.event.Level
 import org.slf4j.spi.LoggingEventBuilder
+import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
@@ -17,44 +18,42 @@ open class WebClientLoggingExchangeFilterFunction(
 
     override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
         val startTime = System.currentTimeMillis()
-        //If no content (Rq without body) - BodyInserter will not be invoked. Have to invoke logging directly
-        val bodyExist = request.headers().contentLength > 0
-        if (!bodyExist) {
-            loggingUtils.writeRequest( request, null)
-        }
-        val loggedRequest = if (bodyExist)
+        val loggedRequest =
             WebClientLoggingRequestBodyInserter(
                 request,
                 request.body(),
                 loggingUtils
             ).createLoggedRequest()
-        else request
         val responseMono = next.exchange(loggedRequest)
             .map { response ->
+                var processed:Boolean=false
                 response
                     .mutate()
                     .body { bytesFlux ->
                         DataBufferUtils.join(bytesFlux)
+                            .publishOn(Schedulers.boundedElastic())
                             .switchIfEmpty{
                                 //If no content  (Rs without body) - Flux will not be invoked, this switchIfEmpty just log request with empty body
-                                loggingUtils.writeResponse(
-                                    request,
-                                    response,
-                                    null,
-                                    startTime
-                                )
-                                return@switchIfEmpty Mono.empty()
+                                Mono.defer {
+                                    if (!processed) {
+                                        loggingUtils.writeResponse(
+                                            request,
+                                            response,
+                                            null,
+                                            startTime
+                                        )
+                                    }
+                                    null
+                                }
                             }
-                            .publishOn(Schedulers.boundedElastic())
                             .map {
-                                val position = it.readPosition()
                                 loggingUtils.writeResponse(
                                     loggedRequest,
                                     response,
-                                    String(it.asInputStream().readAllBytes()),
+                                    it,
                                     startTime
                                 )
-                                it.readPosition(position)
+                                processed=true
                                 it
                             }
                             .flux()

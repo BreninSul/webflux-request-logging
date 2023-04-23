@@ -7,6 +7,7 @@ import org.springframework.http.client.reactive.ClientHttpRequest
 import org.springframework.web.reactive.function.client.ClientRequest
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import java.util.function.Supplier
 
 open class WebClientLoggingClientHttpRequest(
     protected val request: ClientRequest,
@@ -18,10 +19,7 @@ open class WebClientLoggingClientHttpRequest(
             Mono.from(body)
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext {
-                    val position=it.readPosition()
-                    val data = String(it.asInputStream().readAllBytes())
-                    it.readPosition(position)
-                    loggingUtils.writeRequest(request, data)
+                    loggingUtils.writeRequest(request, it)
                 })
     }
 

@@ -13,7 +13,7 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
-
+    maven { url = uri("https://jitpack.io") }
 }
 
 publishing {
@@ -26,9 +26,11 @@ publishing {
     }
 }
 dependencies {
+    implementation("com.github.jitpack:gradle-simple:1.0")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.0.4")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
 tasks.withType<KotlinCompile> {
