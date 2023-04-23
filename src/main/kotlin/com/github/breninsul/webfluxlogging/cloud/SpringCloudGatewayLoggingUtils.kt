@@ -2,6 +2,7 @@ package com.github.breninsul.webfluxlogging.cloud
 
 import com.github.breninsul.webfluxlogging.CommonLoggingUtils
 import org.slf4j.spi.LoggingEventBuilder
+import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.codec.multipart.Part
 import org.springframework.http.server.reactive.ServerHttpRequest
@@ -10,7 +11,13 @@ import org.springframework.util.MultiValueMap
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-class SpringCloudGatewayLoggingUtils protected constructor() {
+open class SpringCloudGatewayLoggingUtils  (
+    val maxBodySize: Int,
+    val logger: LoggingEventBuilder,
+    protected val logTime: Boolean,
+    protected val logHeaders: Boolean,
+    protected val logBody: Boolean,
+    protected val commonUtils:CommonLoggingUtils = CommonLoggingUtils()) {
     protected fun getParams(request: ServerHttpRequest): String {
         val params = request
             .queryParams
@@ -47,25 +54,26 @@ class SpringCloudGatewayLoggingUtils protected constructor() {
         bytes >= 1 shl 10 -> "%.0f kB".format(bytes / (1 shl 10))
         else -> "$bytes bytes"
     }
-
     public fun writeResponse(
-        maxBodySize: Int,
-        logger: LoggingEventBuilder,
-        logTime: Boolean,
-        logHeaders: Boolean,
-        logBody: Boolean,
         request: ServerHttpRequest,
         response: ServerHttpResponse,
-        data: String,
+        data: DataBuffer,
+        startTime: Long?
+    ) {
+        writeResponse(request,response,commonUtils.getContent(data,maxBodySize),startTime)
+    }
+    public fun writeResponse(
+        request: ServerHttpRequest,
+        response: ServerHttpResponse,
+        data: String?,
         startTime: Long?
     ) {
         val timeString =
             if (logTime && startTime != null) ("\n=Took         : ${System.currentTimeMillis() - startTime} ms") else ""
         val headersString =
-            if (logHeaders) ("\n=Headers      : ${CommonLoggingUtils.INSTANCE.getHeadersContent(response.headers)}") else ""
+            if (logHeaders) ("\n=Headers      : ${commonUtils.getHeadersContent(response.headers)}") else ""
         val bodyString =
-            if (logBody) ("\n=Body         : ${CommonLoggingUtils.INSTANCE.getBodyContent(data, maxBodySize)}") else ""
-
+            if (logBody) ("\n=Body         : ${commonUtils.getBodyContent(data, maxBodySize)}") else ""
         val logString = """
 
 ===========================SERVER Gateway response begin===========================
@@ -73,32 +81,15 @@ class SpringCloudGatewayLoggingUtils protected constructor() {
 =URI          : ${request.method}  ${response.statusCode?.value()} ${getParams(request)}$timeString$headersString$bodyString
 ===========================SERVER Gateway response end   ==========================""".trimIndent();
         logger.log(logString)
-        val logBody = """
-
-===========================SERVER Gateway response begin===========================
-=ID           : ${request.id}
-=URI          : ${request.method}  ${response.statusCode?.value()} ${getParams(request)}
-=Took         : ${if (startTime != null) (System.currentTimeMillis() - startTime) else "NOT_AVAILABLE"} ms
-=Headers      : ${
-            response.headers.asSequence().map { "${it.key}:${it.value.joinToString(",")}" }.joinToString(";")
-        }       
-=Body         : $data
-===========================SERVER Gateway response end   ==========================""".trimIndent();
-        logger.log(logBody)
     }
-
     public fun writeRequest(
-        maxBodySize: Int,
-        logger: LoggingEventBuilder,
-        logHeaders: Boolean,
-        logBody: Boolean,
         request: ServerHttpRequest,
-        data: String
+        data: String?
     ) {
         val headersString =
-            if (logHeaders) ("\n=Headers      : ${CommonLoggingUtils.INSTANCE.getHeadersContent(request.headers)}") else ""
+            if (logHeaders) ("\n=Headers      : ${commonUtils.getHeadersContent(request.headers)}") else ""
         val bodyString =
-            if (logBody) ("\n=Body         : ${CommonLoggingUtils.INSTANCE.getBodyContent(data, maxBodySize)}") else ""
+            if (logBody) ("\n=Body         : ${commonUtils.getBodyContent(data, maxBodySize)}") else ""
         val logString =
             """
 ===========================SERVER Gateway request begin===========================
@@ -108,9 +99,11 @@ class SpringCloudGatewayLoggingUtils protected constructor() {
 
         logger.log(logString)
     }
-
-    companion object {
-        @JvmStatic
-        val INSTANCE = SpringCloudGatewayLoggingUtils()
+    public fun writeRequest(
+        request: ServerHttpRequest,
+        data: DataBuffer
+    ) {
+        writeRequest(request,commonUtils.getContent(data,maxBodySize))
     }
+
 }

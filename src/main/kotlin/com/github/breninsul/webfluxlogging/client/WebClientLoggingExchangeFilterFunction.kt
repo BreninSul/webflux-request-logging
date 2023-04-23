@@ -11,31 +11,22 @@ import org.springframework.web.reactive.function.client.ExchangeFunction
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
-class WebClientLoggingExchangeFilterFunction(
-    protected val maxBodySize: Int,
-    protected val loggerRaw: Logger,
-    protected val logLevel: Level,
-    protected val logTime: Boolean,
-    protected val logHeaders: Boolean,
-    protected val logBody: Boolean,
+open class WebClientLoggingExchangeFilterFunction(
+    protected val loggingUtils:WebClientLoggingUtils,
 ) : ExchangeFilterFunction {
-    protected val logger: LoggingEventBuilder = loggerRaw.atLevel(logLevel)
 
     override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
         val startTime = System.currentTimeMillis()
-        //If no content log without body - BodyInserter will not be invoked
+        //If no content (Rq without body) - BodyInserter will not be invoked. Have to invoke logging directly
         val bodyExist = request.headers().contentLength > 0
         if (!bodyExist) {
-            WebClientLogingUtils.INSTANCE.writeRequest(maxBodySize, logger, logHeaders, logBody, request, null)
+            loggingUtils.writeRequest( request, null)
         }
         val loggedRequest = if (bodyExist)
             WebClientLoggingRequestBodyInserter(
-                maxBodySize,
-                logger,
-                logHeaders,
-                logBody,
                 request,
-                request.body()
+                request.body(),
+                loggingUtils
             ).createLoggedRequest()
         else request
         val responseMono = next.exchange(loggedRequest)
@@ -45,13 +36,8 @@ class WebClientLoggingExchangeFilterFunction(
                     .body { bytesFlux ->
                         DataBufferUtils.join(bytesFlux)
                             .switchIfEmpty{
-                                //If no content log without body - Flux will not be invoked
-                                WebClientLogingUtils.INSTANCE.writeResponse(
-                                    maxBodySize,
-                                    logger,
-                                    logTime,
-                                    logHeaders,
-                                    logBody,
+                                //If no content  (Rs without body) - Flux will not be invoked, this switchIfEmpty just log request with empty body
+                                loggingUtils.writeResponse(
                                     request,
                                     response,
                                     null,
@@ -62,12 +48,7 @@ class WebClientLoggingExchangeFilterFunction(
                             .publishOn(Schedulers.boundedElastic())
                             .map {
                                 val position = it.readPosition()
-                                WebClientLogingUtils.INSTANCE.writeResponse(
-                                    maxBodySize,
-                                    logger,
-                                    logTime,
-                                    logHeaders,
-                                    logBody,
+                                loggingUtils.writeResponse(
                                     loggedRequest,
                                     response,
                                     String(it.asInputStream().readAllBytes()),

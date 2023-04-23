@@ -9,12 +9,9 @@ import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
 open class WebClientLoggingClientHttpRequest(
-    protected val maxBodySize: Int,
     protected val request: ClientRequest,
     protected val delegate: ClientHttpRequest,
-    protected val logHeaders: Boolean,
-    protected val logBody: Boolean,
-    protected val logger: LoggingEventBuilder,
+    protected val loggingUtils:WebClientLoggingUtils,
 ) : ClientHttpRequest by delegate {
     override fun writeWith(body: Publisher<out DataBuffer>): Mono<Void> {
         return delegate.writeWith(
@@ -24,7 +21,7 @@ open class WebClientLoggingClientHttpRequest(
                     val position=it.readPosition()
                     val data = String(it.asInputStream().readAllBytes())
                     it.readPosition(position)
-                    WebClientLogingUtils.INSTANCE.writeRequest(maxBodySize,logger,logHeaders,logBody,request, data)
+                    loggingUtils.writeRequest(request, data)
                 })
     }
 

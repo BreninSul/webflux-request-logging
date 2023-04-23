@@ -2,22 +2,31 @@ package com.github.breninsul.webfluxlogging.client
 
 import com.github.breninsul.webfluxlogging.CommonLoggingUtils
 import org.slf4j.spi.LoggingEventBuilder
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.context.annotation.Bean
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 
-class WebClientLogingUtils protected constructor() {
-
+open class WebClientLoggingUtils (
+    protected val maxBodySize: Int,
+    protected val logger: LoggingEventBuilder,
+    protected val logTime:Boolean,
+    protected val logHeaders: Boolean,
+    protected val logBody: Boolean,
+    protected val commonUtils:CommonLoggingUtils = CommonLoggingUtils()) {
+    @Bean
+    @ConditionalOnMissingBean
+    fun getCommonLoggingUtils(
+    ): CommonLoggingUtils {
+        return CommonLoggingUtils()
+    }
     public fun writeRequest(
-        maxBodySize: Int,
-        logger: LoggingEventBuilder,
-        logHeaders: Boolean,
-        logBody: Boolean,
         request: ClientRequest,
         data: String?,
     ) {
 
-        val headersString = if (logHeaders) ("\n=Headers      : ${CommonLoggingUtils.INSTANCE.getHeadersContent(request.headers())}") else ""
-        val bodyString = if (logBody) ("\n=Body         : ${CommonLoggingUtils.INSTANCE.getBodyContent(data, maxBodySize)}") else ""
+        val headersString = if (logHeaders) ("\n=Headers      : ${commonUtils.getHeadersContent(request.headers())}") else ""
+        val bodyString = if (logBody) ("\n=Body         : ${commonUtils.getBodyContent(data, maxBodySize)}") else ""
         val logString =
             """
 ===========================WebClient request begin===========================
@@ -28,19 +37,14 @@ class WebClientLogingUtils protected constructor() {
         logger.log(logString)
     }
     public fun writeResponse(
-        maxBodySize: Int,
-        logger: LoggingEventBuilder,
-        logTime:Boolean,
-        logHeaders: Boolean,
-        logBody: Boolean,
         request: ClientRequest,
         response: ClientResponse,
         data: String?,
         startTime: Long
     ) {
         val timeString= if (logTime) ("\n=Took         : ${System.currentTimeMillis() - startTime} ms") else ""
-        val headersString = if (logHeaders) ("\n=Headers      : ${CommonLoggingUtils.INSTANCE.getHeadersContent(response.headers().asHttpHeaders())}") else ""
-        val bodyString = if (logBody) ("\n=Body         : ${CommonLoggingUtils.INSTANCE.getBodyContent(data, maxBodySize)}") else ""
+        val headersString = if (logHeaders) ("\n=Headers      : ${commonUtils.getHeadersContent(response.headers().asHttpHeaders())}") else ""
+        val bodyString = if (logBody) ("\n=Body         : ${commonUtils.getBodyContent(data, maxBodySize)}") else ""
         val logString = """
 
 ===========================WebClient response begin===========================
@@ -50,8 +54,5 @@ class WebClientLogingUtils protected constructor() {
         logger.log( logString)
     }
 
-    companion object {
-        @JvmStatic
-        val INSTANCE = WebClientLogingUtils()
-    }
+
 }

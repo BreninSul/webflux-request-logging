@@ -7,12 +7,9 @@ import org.springframework.http.server.reactive.ServerHttpRequestDecorator
 import reactor.core.publisher.Flux
 import reactor.core.scheduler.Schedulers
 
-class SpringCloudGatewayLoggingRequestInterceptor(
-    protected val maxBodySize: Int,
-    protected val logHeaders: Boolean,
-    protected val logBody: Boolean,
+open class SpringCloudGatewayLoggingRequestInterceptor(
     protected val delegateRq: ServerHttpRequest,
-    protected val logger: LoggingEventBuilder,
+    protected val loggingUtils: SpringCloudGatewayLoggingUtils,
 ) : ServerHttpRequestDecorator(delegateRq) {
     override fun getBody(): Flux<DataBuffer> {
         return super
@@ -20,16 +17,9 @@ class SpringCloudGatewayLoggingRequestInterceptor(
             .publishOn(Schedulers.boundedElastic())
             .doOnNext { dataBuffer: DataBuffer ->
                 try {
-                    val contentLength = dataBuffer.readableByteCount() - dataBuffer.readPosition();
-                    val content = if (contentLength > maxBodySize) "<TOO BIG $contentLength bytes>" else {
-                        val position=dataBuffer.readPosition()
-                        val body=String(dataBuffer.asInputStream().readAllBytes())
-                        dataBuffer.readPosition(position)
-                        body
-                    }
-                    SpringCloudGatewayLoggingUtils.INSTANCE.writeRequest(maxBodySize,logger,logHeaders,logBody, delegateRq, content)
+                    loggingUtils.writeRequest( delegateRq, dataBuffer)
                 } catch (e: Throwable) {
-                    logger.log("Error in request filter", e)
+                    loggingUtils.logger.log("Error in request filter", e)
                 }
             }
     }

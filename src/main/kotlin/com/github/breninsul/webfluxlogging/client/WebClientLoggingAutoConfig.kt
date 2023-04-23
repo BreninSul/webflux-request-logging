@@ -1,5 +1,6 @@
 package com.github.breninsul.webfluxlogging.client
 
+import com.github.breninsul.webfluxlogging.CommonLoggingUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
@@ -23,23 +24,44 @@ import org.springframework.web.reactive.function.client.WebClient
 )
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 class WebClientLoggingAutoConfig {
+    @Bean
+    @ConditionalOnMissingBean
+    fun getCommonLoggingUtils(
+    ): CommonLoggingUtils {
+        return CommonLoggingUtils()
+    }
 
     @Bean
     @ConditionalOnMissingBean
-    fun getWebClientLogging(
+    fun getWebClientLoggingUtils(
         @Value("\${com.github.breninsul.webfluxlogging.logging.max_body_size.web_client:10000}") maxBodySize: Int,
         @Value("\${com.github.breninsul.webfluxlogging.logging.log_time.web_client:true}") logTime: Boolean,
         @Value("\${com.github.breninsul.webfluxlogging.logging.log_headers.web_client:true}") logHeaders: Boolean,
         @Value("\${com.github.breninsul.webfluxlogging.logging.log_body.web_client:true}") logBody: Boolean,
         @Value("\${com.github.breninsul.webfluxlogging.logging.level.web_client:INFO}") loggingLevel: Level,
         @Value("\${com.github.breninsul.webfluxlogging.logging.logger.web_client:org.springframework.web.reactive.function.client.WebClient}") loggerClass: String,
+        commonLoggingUtils: CommonLoggingUtils
+    ): WebClientLoggingUtils {
+        val logger = LoggerFactory.getLogger(loggerClass).atLevel(loggingLevel)
+        return WebClientLoggingUtils(maxBodySize, logger, logTime, logHeaders, logBody, commonLoggingUtils)
+    }
 
-        ): WebClient {
-        val logger: Logger = LoggerFactory.getLogger(loggerClass)
+    @Bean
+    @ConditionalOnMissingBean
+    fun getWebClientLoggingExchangeFilterFunction(
+        loggingUtils: WebClientLoggingUtils
+    ): WebClientLoggingExchangeFilterFunction {
+        return WebClientLoggingExchangeFilterFunction(loggingUtils)
+    }
 
+    @Bean
+    @ConditionalOnMissingBean
+    fun getWebClientLogging(
+        filter: WebClientLoggingExchangeFilterFunction
+    ): WebClient {
         return WebClient
             .builder()
-            .filter(WebClientLoggingExchangeFilterFunction(maxBodySize, logger, loggingLevel,logTime,logHeaders,logBody))
+            .filter(filter)
             .build()
     }
 }

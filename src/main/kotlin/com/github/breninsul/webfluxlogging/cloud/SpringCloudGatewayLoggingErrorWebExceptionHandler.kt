@@ -1,6 +1,5 @@
 package com.github.breninsul.webfluxlogging.cloud
 
-import com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter.Companion.START_TIME_ATTRIBUTE
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.boot.autoconfigure.web.ErrorProperties
 import org.springframework.boot.autoconfigure.web.WebProperties
@@ -13,21 +12,16 @@ import reactor.core.publisher.Mono
 
 
 class SpringCloudGatewayLoggingErrorWebExceptionHandler(
-    protected val maxBodySize: Int,
     protected val addIdHeader: Boolean,
-    protected val logTime: Boolean,
-    protected val logHeaders: Boolean,
-    protected val logBody: Boolean,
-    protected val logger: LoggingEventBuilder,
-     errorAttributes: ErrorAttributes,
+    protected val utils:SpringCloudGatewayLoggingUtils,
+    errorAttributes: ErrorAttributes,
      resources: WebProperties.Resources,
      errorProperties: ErrorProperties,
      applicationContext: ApplicationContext,
-
     ) : DefaultErrorWebExceptionHandler(errorAttributes, resources, errorProperties, applicationContext) {
     override fun renderErrorResponse(request: ServerRequest): Mono<ServerResponse> {
         val rsMono = super.renderErrorResponse(request)
-        return rsMono.map { ResponseLoggingErrorInterceptor(maxBodySize,addIdHeader,logTime,logHeaders,logBody,logger, it) }
+        return rsMono.map { ResponseLoggingErrorInterceptor(addIdHeader, it,utils) }
     }
 
     override fun acceptsTextHtml(): RequestPredicate {
@@ -37,26 +31,19 @@ class SpringCloudGatewayLoggingErrorWebExceptionHandler(
     }
 
     class ResponseLoggingErrorInterceptor(
-        protected val maxBodySize: Int,
         protected val addIdHeader: Boolean,
-        protected val logTime: Boolean,
-        protected val logHeaders: Boolean,
-        protected val logBody: Boolean,
-        protected val logger: LoggingEventBuilder,
-        protected val delegateRs:ServerResponse
-    ) : ServerResponse by delegateRs {
+        protected val delegateRs:ServerResponse,
+        protected val utils:SpringCloudGatewayLoggingUtils,
+        protected val startTimeAttribute:String = "startTime",
+        ) : ServerResponse by delegateRs {
         override fun writeTo(exchange: ServerWebExchange, context: ServerResponse.Context): Mono<Void> {
             val withLog = exchange.mutate().response(
                 SpringCloudGatewayLoggingResponseInterceptor(
-                    maxBodySize,
                     addIdHeader,
-                    logTime,
-                    logHeaders,
-                    logBody,
                     exchange.response,
                     exchange.request,
-                    logger,
-                    exchange.attributes[START_TIME_ATTRIBUTE] as Long?
+                    exchange.attributes[startTimeAttribute] as Long?,
+                    utils
                 )
             ).build()
             return delegateRs.writeTo(withLog, context)
