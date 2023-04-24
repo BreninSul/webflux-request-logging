@@ -8,8 +8,8 @@ import reactor.core.publisher.Mono
 class WebClientLoggingRequestBodyInserter(
     protected val request: ClientRequest,
     protected val delegate: BodyInserter<*, in ClientHttpRequest>,
-    protected val loggingUtils:WebClientLoggingUtils,
-    ) : BodyInserter<Any, ClientHttpRequest> {
+    protected val loggingUtils: WebClientLoggingUtils,
+) : BodyInserter<Any, ClientHttpRequest> {
     protected val loggedRequest = ClientRequest.from(request).body(this).build()
     fun createLoggedRequest(): ClientRequest {
         return loggedRequest
@@ -17,12 +17,14 @@ class WebClientLoggingRequestBodyInserter(
 
     override fun insert(outputMessage: ClientHttpRequest, context: BodyInserter.Context): Mono<Void> {
         outputMessage.beforeCommit {
-            //If no content (Rq without body) - BodyInserter will not be invoked. Have to invoke logging directly
-            val bodyExist = outputMessage.headers.contentLength > 0
-            if (!bodyExist) {
-                loggingUtils.writeRequest( request, null)
+            Mono.defer {
+                //If no content (Rq without body) - BodyInserter will not be invoked. Have to invoke logging directly
+                val bodyExist = outputMessage.headers.contentLength > 0
+                if (!bodyExist) {
+                    loggingUtils.writeRequest(request, null)
+                }
+                Mono.empty<Void>()
             }
-            Mono.empty<Void>()
         }
         return delegate.insert(
             WebClientLoggingClientHttpRequest(

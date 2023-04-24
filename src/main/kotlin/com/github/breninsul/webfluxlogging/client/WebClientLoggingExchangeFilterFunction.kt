@@ -36,6 +36,7 @@ open class WebClientLoggingExchangeFilterFunction(
                                 //If no content  (Rs without body) - Flux will not be invoked, this switchIfEmpty just log request with empty body
                                 Mono.defer {
                                     if (!processed) {
+                                        processed=true
                                         loggingUtils.writeResponse(
                                             request,
                                             response,
@@ -43,17 +44,17 @@ open class WebClientLoggingExchangeFilterFunction(
                                             startTime
                                         )
                                     }
-                                    null
+                                    Mono.empty<DataBuffer>()
                                 }
                             }
                             .map {
+                                processed=true
                                 loggingUtils.writeResponse(
                                     loggedRequest,
                                     response,
                                     it,
                                     startTime
                                 )
-                                processed=true
                                 it
                             }
                             .flux()

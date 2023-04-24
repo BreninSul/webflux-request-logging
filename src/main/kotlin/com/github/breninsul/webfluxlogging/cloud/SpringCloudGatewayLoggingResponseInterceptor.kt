@@ -25,19 +25,22 @@ open class SpringCloudGatewayLoggingResponseInterceptor(
         if (addIdHeader) {
             delegateRs.headers.add(idHeader, delegateRq.id)
         }
-        val buffer = Flux.from(body)
-        return super.writeWith(buffer
+        val buffer = Mono.from(body)
+        val dataBufferFlux = buffer
             .publishOn(Schedulers.boundedElastic())
-            .switchIfEmpty {
-                utils.writeResponse(delegateRq,delegateRs,null as DataBuffer?,startTime)
-                Mono.empty<Void>()
-            }
+            .switchIfEmpty (
+               Mono.defer {
+                    utils.writeResponse(delegateRq, delegateRs, null as DataBuffer?, startTime)
+                    return@defer Mono.empty< DataBuffer>()
+                } as Mono<DataBuffer>
+            )
             .doOnNext { dataBuffer: DataBuffer ->
-            try {
-                utils.writeResponse(delegateRq,delegateRs,dataBuffer,startTime)
-            } catch (e: Throwable) {
-                utils.log("Error in response filter", e)
+                try {
+                    utils.writeResponse(delegateRq, delegateRs, dataBuffer, startTime)
+                } catch (e: Throwable) {
+                    utils.log("Error in response filter", e)
+                }
             }
-        })
+        return super.writeWith(dataBufferFlux)
     }
 }

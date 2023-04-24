@@ -8,7 +8,7 @@ plugins {
     kotlin("plugin.spring") version "1.8.20"
 }
 group = "com.github.breninsul"
-version = "1.0.6"
+version = "1.0.10"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
