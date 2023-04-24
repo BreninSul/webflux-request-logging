@@ -28,11 +28,15 @@ open class SpringCloudGatewayLoggingResponseInterceptor(
         val buffer = Flux.from(body)
         return super.writeWith(buffer
             .publishOn(Schedulers.boundedElastic())
+            .switchIfEmpty {
+                utils.writeResponse(delegateRq,delegateRs,null as DataBuffer?,startTime)
+                Mono.empty<Void>()
+            }
             .doOnNext { dataBuffer: DataBuffer ->
             try {
                 utils.writeResponse(delegateRq,delegateRs,dataBuffer,startTime)
             } catch (e: Throwable) {
-                utils.logger.log("Error in response filter", e)
+                utils.log("Error in response filter", e)
             }
         })
     }

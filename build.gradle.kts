@@ -8,14 +8,16 @@ plugins {
     kotlin("plugin.spring") version "1.8.20"
 }
 group = "com.github.breninsul"
-version = "1.0.0"
+version = "1.0.6"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
     maven { url = uri("https://jitpack.io") }
 }
-
+java {
+    withSourcesJar()
+}
 publishing {
     publications {
         register<MavenPublication>("release") {
@@ -28,6 +30,24 @@ publishing {
 
     }
 }
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/BreninSul/webflux-request-logging")
+            credentials {
+                username = "${System.getenv()["GIHUB_PACKAGE_USERNAME"]}"
+                password = "${System.getenv()["GIHUB_PACKAGE_TOKEN"]}"
+            }
+        }
+    }
+//    publications {
+//        register<MavenPublication>("gpr") {
+//            from(components["java"])
+//        }
+//    }
+}
+
 dependencies {
     implementation("com.github.jitpack:gradle-simple:1.0")
     implementation("org.springframework.boot:spring-boot-starter-webflux")

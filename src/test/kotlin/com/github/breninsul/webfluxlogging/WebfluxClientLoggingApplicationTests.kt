@@ -27,21 +27,7 @@ import java.util.*
 @ContextConfiguration(classes = arrayOf(WebClientLoggingAutoConfig::class))
 @WebFluxTest(value = arrayOf(WebClientLoggingAutoConfig::class))
 class WebfluxClientLoggingApplicationTests() {
-    private var appLogger: Logger? = null
-    private var listAppender: ListAppender<ILoggingEvent>? = null
 
-    @BeforeEach
-    fun setUp() {
-        appLogger = LoggerFactory.getLogger(WebClient::class.java)
-        listAppender = ListAppender()
-        listAppender!!.start()
-//        appLogger.addHandler(listAppender)
-    }
-
-    @AfterEach
-    fun tearDown() {
-//        appLogger.detachAppender(listAppender)
-    }
 
     @Autowired
     lateinit var webClient: WebClient

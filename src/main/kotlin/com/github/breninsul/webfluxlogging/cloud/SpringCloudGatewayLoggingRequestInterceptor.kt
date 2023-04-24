@@ -2,9 +2,11 @@ package com.github.breninsul.webfluxlogging.cloud
 
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.http.HttpMethod
 import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
 open class SpringCloudGatewayLoggingRequestInterceptor(
@@ -12,16 +14,27 @@ open class SpringCloudGatewayLoggingRequestInterceptor(
     protected val loggingUtils: SpringCloudGatewayLoggingUtils,
 ) : ServerHttpRequestDecorator(delegateRq) {
     override fun getBody(): Flux<DataBuffer> {
-        return super
+        val flux = super
             .getBody()
             .publishOn(Schedulers.boundedElastic())
+            .switchIfEmpty {
+                loggingUtils.writeRequest(delegateRq, null as DataBuffer?)
+                Mono.empty<Void>()
+            }
             .doOnNext { dataBuffer: DataBuffer ->
                 try {
-                    loggingUtils.writeRequest( delegateRq, dataBuffer)
+                    loggingUtils.writeRequest(delegateRq, dataBuffer)
                 } catch (e: Throwable) {
-                    loggingUtils.logger.log("Error in request filter", e)
+                    loggingUtils.log("Error in request filter", e)
                 }
             }
+        if (delegateRq.method == HttpMethod.GET) {
+            val cached = flux.cache()
+            cached.subscribeOn(Schedulers.boundedElastic()).subscribe()
+            return cached
+        } else {
+            return flux
+        }
     }
 
 

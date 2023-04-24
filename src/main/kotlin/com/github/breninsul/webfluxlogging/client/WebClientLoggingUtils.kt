@@ -8,10 +8,13 @@ import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
+import java.util.logging.Level
+import java.util.logging.Logger
 
 open class WebClientLoggingUtils (
     protected val maxBodySize: Int,
-    protected val logger: LoggingEventBuilder,
+    protected val logger: Logger,
+    protected val loggingLevel:Level,
     protected val logTime:Boolean,
     protected val logHeaders: Boolean,
     protected val logBody: Boolean,
@@ -42,7 +45,7 @@ open class WebClientLoggingUtils (
 =URI          : ${request.method()} ${request.url()}$headersString$bodyString
 ===========================WebClient request end   ==========================
 """.trimMargin()
-        logger.log(logString)
+        logger.log(loggingLevel,logString)
     }
     public fun writeResponse(
         request: ClientRequest,
@@ -67,7 +70,7 @@ open class WebClientLoggingUtils (
 =ID           : ${request.logPrefix()}
 =URI          : ${response.statusCode()} ${request.method()} ${request.url()}$timeString$headersString$bodyString
 ===========================WebClient response end   ==========================""".trimIndent()
-        logger.log( logString)
+        logger.log(loggingLevel, logString)
     }
 
 

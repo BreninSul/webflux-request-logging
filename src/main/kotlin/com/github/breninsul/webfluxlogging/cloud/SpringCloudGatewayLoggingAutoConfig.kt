@@ -46,12 +46,13 @@ class SpringCloudGatewayLoggingAutoConfig {
         @Value("\${com.github.breninsul.webfluxlogging.logging.log_time.spring_cloud_gateway:true}") logTime: Boolean,
         @Value("\${com.github.breninsul.webfluxlogging.logging.log_headers.spring_cloud_gateway:true}") logHeaders: Boolean,
         @Value("\${com.github.breninsul.webfluxlogging.logging.log_body.spring_cloud_gateway:true}") logBody: Boolean,
-        @Value("\${com.github.breninsul.webfluxlogging.logging.level.spring_cloud_gateway:INFO}") loggingLevel: Level,
+        @Value("\${com.github.breninsul.webfluxlogging.logging.level.spring_cloud_gateway:INFO}") loggingLevel: java.util.logging.Level,
         @Value("\${com.github.breninsul.webfluxlogging.logging.logger.spring_cloud_gateway:com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter}") loggerClass: String,
         commonLoggingUtils: CommonLoggingUtils
         ): SpringCloudGatewayLoggingUtils {
-        val logger = LoggerFactory.getLogger(loggerClass).atLevel(loggingLevel)
-        return SpringCloudGatewayLoggingUtils(maxBodySize,logger,logTime,logHeaders,logBody,commonLoggingUtils)
+        val logger=java.util.logging.Logger.getLogger(loggerClass)
+//        val logger = LoggerFactory.getLogger(loggerClass).atLevel(loggingLevel)
+        return SpringCloudGatewayLoggingUtils(maxBodySize,logger,loggingLevel,logTime,logHeaders,logBody,commonLoggingUtils)
     }
 
     @Bean

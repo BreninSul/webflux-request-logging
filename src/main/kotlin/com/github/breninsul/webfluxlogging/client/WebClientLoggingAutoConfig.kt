@@ -1,9 +1,6 @@
 package com.github.breninsul.webfluxlogging.client
 
 import com.github.breninsul.webfluxlogging.CommonLoggingUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.slf4j.event.Level
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
@@ -38,12 +35,13 @@ class WebClientLoggingAutoConfig {
         @Value("\${com.github.breninsul.webfluxlogging.logging.log_time.web_client:true}") logTime: Boolean,
         @Value("\${com.github.breninsul.webfluxlogging.logging.log_headers.web_client:true}") logHeaders: Boolean,
         @Value("\${com.github.breninsul.webfluxlogging.logging.log_body.web_client:true}") logBody: Boolean,
-        @Value("\${com.github.breninsul.webfluxlogging.logging.level.web_client:INFO}") loggingLevel: Level,
+        @Value("\${com.github.breninsul.webfluxlogging.logging.level.web_client:INFO}") loggingLevel: java.util.logging.Level,
         @Value("\${com.github.breninsul.webfluxlogging.logging.logger.web_client:org.springframework.web.reactive.function.client.WebClient}") loggerClass: String,
         commonLoggingUtils: CommonLoggingUtils
     ): WebClientLoggingUtils {
-        val logger = LoggerFactory.getLogger(loggerClass).atLevel(loggingLevel)
-        return WebClientLoggingUtils(maxBodySize, logger, logTime, logHeaders, logBody, commonLoggingUtils)
+        val logger=java.util.logging.Logger.getLogger(loggerClass)
+//        val logger = LoggerFactory.getLogger(loggerClass).atLevel(loggingLevel)
+        return WebClientLoggingUtils(maxBodySize, logger,loggingLevel, logTime, logHeaders, logBody, commonLoggingUtils)
     }
 
     @Bean
