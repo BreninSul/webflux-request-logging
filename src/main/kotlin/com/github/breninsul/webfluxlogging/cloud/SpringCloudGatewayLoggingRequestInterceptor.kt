@@ -31,12 +31,12 @@ open class SpringCloudGatewayLoggingRequestInterceptor(
                     loggingUtils.log("Error in request filter", e)
                 }
             }.flux()
-        if (delegateRq.method == HttpMethod.GET) {
+        return if (delegateRq.method == HttpMethod.GET) {
             val cached = flux.cache()
             cached.subscribeOn(Schedulers.boundedElastic()).subscribe()
-            return cached
+            cached
         } else {
-            return flux
+            flux
         }
     }
 
