@@ -9,12 +9,6 @@ To connect, simply connect the repository #
 
 Properties (can bes set from system env or application properties)
 Spring Cloud Gateway:
-<style scoped>
-table {
-  font-size: 5px;
-}
-</style>
-
 |                                                          Property                                                          |                                             Default                                             |                                                  Description                                                  |
 |:--------------------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------:|
 | <sub><sup><sub><sup>com.github.breninsul.webfluxlogging.logging.max_body_size.spring_cloud_gateway</sup></sub></sup></sub> | <sub><sup>                                  10000                                  </sup></sub> | <sub><sup>                               Maximum body size to log                                </sup></sub> |
