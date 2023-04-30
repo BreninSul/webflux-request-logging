@@ -29,8 +29,6 @@ publishing {
         }
 
     }
-}
-publishing {
     repositories {
         maven {
             name = "GitHubPackages"
@@ -41,11 +39,6 @@ publishing {
             }
         }
     }
-//    publications {
-//        register<MavenPublication>("gpr") {
-//            from(components["java"])
-//        }
-//    }
 }
 
 dependencies {
