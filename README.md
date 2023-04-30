@@ -5,7 +5,36 @@ This module provides query logging for
 1) Spring Cloud Gateway
 2) Spring WebFlux WebClient
 
-To connect, simply connect the repository #
+To connect, just connect the repository
+````
+```
+repositories {
+    mavenCentral()
+    ....
+   maven {
+        name = "GitHub"
+        url = uri("https://maven.pkg.github.com/BreninSul/webflux-request-logging")
+        credentials {
+            username = "GIHUB_PACKAGE_USERNAME" // GIHUB_PACKAGE_USERNAME - your github personal access token username.
+            password = "GIHUB_PACKAGE_TOKEN" // GIHUB_PACKAGE_TOKEN - your github personal access token.
+        }
+    }
+    ...
+}
+```
+````
+
+And add lib as dependency
+````
+```
+dependencies {
+    ...
+    implementation("com.github.breninsul:webflux-logging:1.0.10")
+    ...
+}
+
+```
+````
 
 Properties (can bes set from system env or application properties)
 
