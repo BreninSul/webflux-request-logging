@@ -8,6 +8,7 @@ This module provides query logging for
 To connect, simply connect the repository #
 
 Properties (can bes set from system env or application properties)
+
 Spring Cloud Gateway:
 |                                                          Property                                                          |                                             Default                                             |                                                  Description                                                  |
 |:--------------------------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------:|
@@ -21,7 +22,6 @@ Spring Cloud Gateway:
 | <sub><sup><sub><sup>     com.github.breninsul.webfluxlogging.spring_cloud_gateway.disabled        </sup></sub></sup></sub> | <sub><sup>                                  FALSE                                  </sup></sub> | <sub><sup>Disable autoconfiguration (register Filter as bean) Spring Cloud Gateway logging filter</sup></sub> |
 
 Spring WebFlux WebClient:
-
 |                                                      Property                                                       |                                     Default                                      |                                                         Description                                                         |
 |:-------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------:|
 | <sub><sup><sub><sup>com.github.breninsul.webfluxlogging.logging.max_body_size.web_client  </sup></sub></sup></sub>  | <sub><sup>                         10000                            </sup></sub> | <sub><sup>                                      Maximum body size to log                                      </sup></sub>  |
