@@ -3,6 +3,7 @@ package com.github.breninsul.webfluxlogging.cloud
 import org.reactivestreams.Publisher
 import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator
@@ -25,7 +26,7 @@ open class SpringCloudGatewayLoggingResponseInterceptor(
         if (addIdHeader) {
             delegateRs.headers.add(idHeader, delegateRq.id)
         }
-        val buffer = Mono.from(body)
+        val buffer = DataBufferUtils.join(body)
         val dataBufferFlux = buffer
             .publishOn(Schedulers.boundedElastic())
             .switchIfEmpty (
