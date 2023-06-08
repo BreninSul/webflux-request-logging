@@ -51,7 +51,7 @@ open class SpringCloudGatewayLoggingUtils  (
         } else {
             val content =
                 it.content().collectList()
-                    .map { list -> list.map { buffer -> buffer.asInputStream().readAllBytes() }.joinToString(";") }
+                    .map { list -> list.map { buffer -> String(buffer.asInputStream().readAllBytes()) }.joinToString(";") }
             return content.map { l ->
                 return@map "${it.name()}:${l}"
             }
