@@ -26,15 +26,15 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "3.0.6"
-    id("io.spring.dependency-management") version "1.1.0"
+    id("org.springframework.boot") version "3.2.0"
+    id("io.spring.dependency-management") version "1.1.4"
     id("maven-publish")
-    kotlin("jvm") version "1.8.20"
-    kotlin("plugin.spring") version "1.8.20"
+    kotlin("jvm") version "1.9.20"
+    kotlin("plugin.spring") version "1.9.20"
 }
 group = "com.github.breninsul"
-version = "1.0.12"
-java.sourceCompatibility = JavaVersion.VERSION_17
+version = "1.0.13"
+java.sourceCompatibility = JavaVersion.VERSION_21
 
 repositories {
     mavenCentral()
@@ -67,9 +67,9 @@ publishing {
 }
 
 dependencies {
-    implementation("com.github.jitpack:gradle-simple:1.0")
+    implementation("com.github.jitpack:gradle-simple:1.1")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.0.4")
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.1.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
@@ -77,7 +77,7 @@ dependencies {
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
 }
 

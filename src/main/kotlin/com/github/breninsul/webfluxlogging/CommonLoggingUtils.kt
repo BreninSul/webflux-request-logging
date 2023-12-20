@@ -27,6 +27,7 @@ package com.github.breninsul.webfluxlogging
 
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.http.HttpHeaders
+import java.nio.charset.Charset
 
 open class CommonLoggingUtils constructor() {
     public fun getHeadersContent(headers: HttpHeaders) =
@@ -35,21 +36,33 @@ open class CommonLoggingUtils constructor() {
     public fun getBodyContent(data: String?, maxBodySize: Int) =
         if (data == null) "<EMPTY>" else if (data.length > maxBodySize) "<TOO BIG ${data.length} bytes>" else data
 
-    public fun getBodyContent(dataBuffer: DataBuffer?, maxBodySize: Int)= getBodyContent(getContent(dataBuffer,maxBodySize), maxBodySize)
-    public fun getContent(dataBuffer: DataBuffer?, maxBodySize: Int): String? {
-        if (dataBuffer == null) {
-            return null;
-        }
-        val contentLength = dataBuffer.readableByteCount() - dataBuffer.readPosition();
+    public fun getBodyContent(dataBuffer: DataBuffer?, maxBodySize: Int) =
+        getBodyContent(getContent(dataBuffer, maxBodySize), maxBodySize)
+
+    public fun getContentBytes(dataBuffer: DataBuffer?): ByteArray? {
+        val contentLength = countContentLength(dataBuffer);
         if (contentLength == 0) {
             return null
         }
-        val content = if (contentLength > maxBodySize) "<TOO BIG $contentLength bytes>" else {
-            val position = dataBuffer.readPosition()
-            val body = String(dataBuffer.asInputStream().readAllBytes())
-            dataBuffer.readPosition(position)
-            body
-        }
-        return content
+        val position = dataBuffer!!.readPosition()
+        val body = dataBuffer.asInputStream().readAllBytes()
+        dataBuffer.readPosition(position)
+        return body
     }
+
+    public fun getContent(dataBuffer: DataBuffer?, maxBodySize: Int, charset: Charset = Charsets.UTF_8): String? {
+        val contentLength = countContentLength(dataBuffer);
+        if (contentLength == 0) {
+            return null
+        }
+        val stringContent =
+            if (contentLength > maxBodySize)
+                "<TOO BIG $contentLength bytes>"
+            else getContentBytes(dataBuffer)?.let { String(it, charset) }
+        return stringContent
+    }
+
+    public fun countContentLength(dataBuffer: DataBuffer?) =
+        if (dataBuffer==null) 0 else
+        dataBuffer.readableByteCount() - dataBuffer.readPosition()
 }
