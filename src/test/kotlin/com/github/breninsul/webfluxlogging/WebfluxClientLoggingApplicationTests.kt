@@ -49,8 +49,8 @@ import java.util.*
 //@SpringBootTest()
 //@SpringBootConfiguration()
 @ExtendWith(OutputCaptureExtension::class)
-@ContextConfiguration(classes = arrayOf(WebClientLoggingAutoConfig::class))
-@WebFluxTest(value = arrayOf(WebClientLoggingAutoConfig::class))
+@ContextConfiguration(classes = [WebClientLoggingAutoConfig::class])
+@WebFluxTest(value = [WebClientLoggingAutoConfig::class])
 class WebfluxClientLoggingApplicationTests() {
 
 

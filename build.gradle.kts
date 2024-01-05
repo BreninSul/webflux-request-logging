@@ -26,15 +26,18 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "3.2.0"
-    id("io.spring.dependency-management") version "1.1.4"
+    id("java-library")
     id("maven-publish")
-    kotlin("jvm") version "1.9.20"
-    kotlin("plugin.spring") version "1.9.20"
+    id("org.springframework.boot") version "3.2.1"
+    id("io.spring.dependency-management") version "1.1.4"
+    id("org.jetbrains.kotlin.jvm") version "1.9.22"
+    id("org.jetbrains.kotlin.plugin.spring") version "1.9.22"
+    id("org.jetbrains.kotlin.kapt") version "1.9.22"
 }
 group = "com.github.breninsul"
-version = "1.0.13"
+version = "1.1.00"
 java.sourceCompatibility = JavaVersion.VERSION_21
+
 
 repositories {
     mavenCentral()
@@ -66,22 +69,36 @@ publishing {
     }
 }
 
-dependencies {
-    implementation("com.github.jitpack:gradle-simple:1.1")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.1.0")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-}
-
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "21"
     }
 }
-
+tasks.compileJava{
+    val dependsOn = dependsOn
+    dependsOn.add(tasks.processResources)
+}
+tasks.compileKotlin{
+    dependsOn.add(tasks.processResources)
+}
+//compileJava.dependsOn(processResources)
+//compileKotlin.dependsOn(processResources)
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+
+dependencies {
+    implementation("com.github.jitpack:gradle-simple:1.1")
+    implementation("org.springframework.boot:spring-boot-starter-webflux:")
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.1.0")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    annotationProcessor("org.apache.logging.log4j:log4j-core")
+    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor:")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:")
+    kapt("org.springframework.boot:spring-boot-autoconfigure-processor:")
+    kapt("org.springframework.boot:spring-boot-configuration-processor:")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
