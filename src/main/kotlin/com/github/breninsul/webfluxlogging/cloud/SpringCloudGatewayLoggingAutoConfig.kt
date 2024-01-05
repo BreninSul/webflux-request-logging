@@ -53,7 +53,7 @@ import org.springframework.web.reactive.result.view.ViewResolver
 @Configuration
 @ConditionalOnClass(GatewayFilter::class)
 @ConditionalOnProperty(
-    prefix = "com.github.breninsul.webfluxlogging.spring_cloud_gateway",
+    prefix = "webflux.logging.gateway",
     name = arrayOf("disabled"),
     matchIfMissing = true,
     havingValue = "false"

@@ -32,11 +32,12 @@ import java.util.logging.Level
 data class WebClientLoggingProperties(
     var maxBodySize: Int = 10000,
     var logTime: Boolean = true,
-    val logHeaders: Boolean = true,
-    val logBody: Boolean = true,
-    val loggingLevel: String = "INFO",
-    val loggerClass: String ="org.springframework.web.reactive.function.client.WebClient",
-){
+    var logHeaders: Boolean = true,
+    var logBody: Boolean = true,
+    var loggingLevel: String = "INFO",
+    var loggerClass: String ="org.springframework.web.reactive.function.client.WebClient",
+    var disabled :Boolean = false,
+    ){
     fun getLoggingLevelAsJavaLevel():Level{
         return Level.parse(loggingLevel)
     }

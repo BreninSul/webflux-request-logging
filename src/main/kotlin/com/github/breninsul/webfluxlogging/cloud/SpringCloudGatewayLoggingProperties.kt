@@ -34,10 +34,11 @@ data class SpringCloudGatewayLoggingProperties(
     var maxBodySize: Int = 10000,
     var addIdHeader:Boolean = true,
     var logTime: Boolean = true,
-    val logHeaders: Boolean = true,
-    val logBody: Boolean = true,
-    val loggingLevel: String = "INFO",
-    val loggerClass: String = "com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter",
+    var logHeaders: Boolean = true,
+    var logBody: Boolean = true,
+    var loggingLevel: String = "INFO",
+    var loggerClass: String = "com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter",
+    var disabled :Boolean = false,
 ){
     fun getLoggingLevelAsJavaLevel():Level{
         return Level.parse(loggingLevel)

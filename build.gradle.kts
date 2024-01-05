@@ -35,7 +35,7 @@ plugins {
     id("org.jetbrains.kotlin.kapt") version "1.9.22"
 }
 group = "com.github.breninsul"
-version = "1.1.00"
+version = "1.1.01"
 java.sourceCompatibility = JavaVersion.VERSION_21
 
 
@@ -82,8 +82,7 @@ tasks.compileJava{
 tasks.compileKotlin{
     dependsOn.add(tasks.processResources)
 }
-//compileJava.dependsOn(processResources)
-//compileKotlin.dependsOn(processResources)
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
@@ -95,10 +94,10 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.1.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     annotationProcessor("org.apache.logging.log4j:log4j-core")
-    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor:")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:")
-    kapt("org.springframework.boot:spring-boot-autoconfigure-processor:")
-    kapt("org.springframework.boot:spring-boot-configuration-processor:")
+    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    kapt("org.springframework.boot:spring-boot-autoconfigure-processor")
+    kapt("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
