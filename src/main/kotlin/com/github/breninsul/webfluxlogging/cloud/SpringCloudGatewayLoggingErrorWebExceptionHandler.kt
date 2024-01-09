@@ -36,7 +36,7 @@ import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
 
-class SpringCloudGatewayLoggingErrorWebExceptionHandler(
+open class SpringCloudGatewayLoggingErrorWebExceptionHandler(
     protected val addIdHeader: Boolean,
     protected val utils:SpringCloudGatewayLoggingUtils,
     errorAttributes: ErrorAttributes,
@@ -55,7 +55,7 @@ class SpringCloudGatewayLoggingErrorWebExceptionHandler(
         }
     }
 
-    class ResponseLoggingErrorInterceptor(
+    open class ResponseLoggingErrorInterceptor(
         protected val addIdHeader: Boolean,
         protected val delegateRs:ServerResponse,
         protected val utils:SpringCloudGatewayLoggingUtils,

@@ -30,13 +30,13 @@ import org.springframework.web.reactive.function.BodyInserter
 import org.springframework.web.reactive.function.client.ClientRequest
 import reactor.core.publisher.Mono
 
-class WebClientLoggingRequestBodyInserter(
+open class WebClientLoggingRequestBodyInserter(
     protected val request: ClientRequest,
     protected val delegate: BodyInserter<*, in ClientHttpRequest>,
     protected val loggingUtils: WebClientLoggingUtils,
 ) : BodyInserter<Any, ClientHttpRequest> {
     protected val loggedRequest = ClientRequest.from(request).body(this).build()
-    fun createLoggedRequest(): ClientRequest {
+    open fun createLoggedRequest(): ClientRequest {
         return loggedRequest
     }
 

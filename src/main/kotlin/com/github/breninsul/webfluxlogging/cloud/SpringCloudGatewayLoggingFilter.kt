@@ -33,7 +33,7 @@ import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
 
-class SpringCloudGatewayLoggingFilter(
+open class SpringCloudGatewayLoggingFilter(
     protected val addIdHeader: Boolean,
     protected val utils:SpringCloudGatewayLoggingUtils,
     protected val orderValue: Int = Int.MIN_VALUE,

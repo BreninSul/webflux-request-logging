@@ -50,13 +50,13 @@ open class WebClientLoggingUtils (
     ): CommonLoggingUtils {
         return CommonLoggingUtils()
     }
-    public fun writeRequest(
+    open fun writeRequest(
         request: ClientRequest,
         data: DataBuffer?
     ) {
         writeRequest(request,commonUtils.getContent(data,maxBodySize))
     }
-    protected fun writeRequest(
+    protected open fun writeRequest(
         request: ClientRequest,
         data: String?,
     ) {
@@ -72,7 +72,7 @@ open class WebClientLoggingUtils (
 """.trimMargin()
         logger.log(loggingLevel,logString)
     }
-    public fun writeResponse(
+    open fun writeResponse(
         request: ClientRequest,
         response: ClientResponse,
         data: DataBuffer?,
@@ -80,7 +80,7 @@ open class WebClientLoggingUtils (
     ) {
         writeResponse(request,response,commonUtils.getContent(data,maxBodySize),startTime)
     }
-    protected fun writeResponse(
+    protected open fun writeResponse(
         request: ClientRequest,
         response: ClientResponse,
         data: String?,

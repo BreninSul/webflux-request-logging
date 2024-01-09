@@ -46,14 +46,14 @@ open class SpringCloudGatewayLoggingUtils  (
     protected val logHeaders: Boolean,
     protected val logBody: Boolean,
     protected val commonUtils:CommonLoggingUtils = CommonLoggingUtils()) {
-    protected fun getParams(request: ServerHttpRequest): String {
+    protected open fun getParams(request: ServerHttpRequest): String {
         val params = request
             .queryParams
             .entries
             .map { "${it.key}:${it.value.joinToString(",")}" }.joinToString("&")
         return request.path.toString() + (if (params.isBlank()) params else "?$params")
     }
-    public fun log(logString:String,t:Throwable?=null){
+    open fun log(logString:String,t:Throwable?=null){
         if (t!=null) {
             logger.log(loggingLevel, logString, t)
         } else{
@@ -61,12 +61,12 @@ open class SpringCloudGatewayLoggingUtils  (
 
         }
     }
-    public fun getPartsContent(data: MultiValueMap<String, Part>): Mono<String> {
+    open fun getPartsContent(data: MultiValueMap<String, Part>): Mono<String> {
         return Flux.fromIterable(data.values.flatten().map { getPartContest(it) }).flatMap { it }.collectList()
             .map { it.joinToString(";") }
     }
 
-    protected fun getPartContest(it: Part): Mono<String> {
+    protected open fun getPartContest(it: Part): Mono<String> {
         if (it is FilePart) {
             val contentLength =
                 it.content().collectList().map { list -> list.sumOf { buffer -> buffer.readableByteCount() } }
@@ -83,13 +83,13 @@ open class SpringCloudGatewayLoggingUtils  (
         }
     }
 
-    protected fun bytesToHumanReadableSize(bytes: Double) = when {
+    protected open fun bytesToHumanReadableSize(bytes: Double) = when {
         bytes >= 1 shl 30 -> "%.1f GB".format(bytes / (1 shl 30))
         bytes >= 1 shl 20 -> "%.1f MB".format(bytes / (1 shl 20))
         bytes >= 1 shl 10 -> "%.0f kB".format(bytes / (1 shl 10))
         else -> "$bytes bytes"
     }
-    public fun writeResponse(
+    open fun writeResponse(
         request: ServerHttpRequest,
         response: ServerHttpResponse,
         data: DataBuffer?,
@@ -97,7 +97,7 @@ open class SpringCloudGatewayLoggingUtils  (
     ) {
         writeResponse(request,response,commonUtils.getContent(data,maxBodySize),startTime)
     }
-    protected fun writeResponse(
+    protected open fun writeResponse(
         request: ServerHttpRequest,
         response: ServerHttpResponse,
         data: String?,
@@ -118,13 +118,13 @@ open class SpringCloudGatewayLoggingUtils  (
         log(logString)
     }
 
-    public fun writeRequest(
+    open fun writeRequest(
         request: ServerHttpRequest,
         data: DataBuffer?
     ) {
         writeRequest(request,commonUtils.getContent(data,maxBodySize))
     }
-    public fun writeRequest(
+    public open fun writeRequest(
         request: ServerHttpRequest,
         data: String?
     ) {

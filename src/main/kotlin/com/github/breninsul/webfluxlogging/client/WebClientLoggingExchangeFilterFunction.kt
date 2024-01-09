@@ -88,6 +88,6 @@ open class WebClientLoggingExchangeFilterFunction(
         return responseMono
     }
 
-    protected fun <T> Mono<T>.switchIfEmpty(s: () -> Mono<T>): Mono<T> = this.switchIfEmpty(Mono.defer { s() })
+    protected open fun <T> Mono<T>.switchIfEmpty(s: () -> Mono<T>): Mono<T> = this.switchIfEmpty(Mono.defer { s() })
 
 }
