@@ -50,14 +50,14 @@ import org.springframework.web.reactive.function.client.WebClient
 @EnableConfigurationProperties(WebClientLoggingProperties::class)
 class WebClientLoggingAutoConfig {
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(CommonLoggingUtils::class)
     fun getCommonLoggingUtils(
     ): CommonLoggingUtils {
         return CommonLoggingUtils()
     }
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(WebClientLoggingUtils::class)
     fun getWebClientLoggingUtils(
         props: WebClientLoggingProperties,
         commonLoggingUtils: CommonLoggingUtils
@@ -67,7 +67,7 @@ class WebClientLoggingAutoConfig {
     }
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(WebClientLoggingExchangeFilterFunction::class)
     fun getWebClientLoggingExchangeFilterFunction(
         loggingUtils: WebClientLoggingUtils
     ): WebClientLoggingExchangeFilterFunction {
@@ -75,7 +75,7 @@ class WebClientLoggingAutoConfig {
     }
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(WebClient::class)
     fun getWebClientLogging(
         filter: WebClientLoggingExchangeFilterFunction
     ): WebClient {

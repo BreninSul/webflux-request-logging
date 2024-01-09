@@ -35,7 +35,7 @@ plugins {
     id("org.jetbrains.kotlin.kapt") version "1.9.22"
 }
 group = "com.github.breninsul"
-version = "1.1.02"
+version = "1.1.03"
 java.sourceCompatibility = JavaVersion.VERSION_21
 
 

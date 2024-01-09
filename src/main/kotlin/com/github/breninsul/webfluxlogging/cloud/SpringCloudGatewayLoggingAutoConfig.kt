@@ -48,6 +48,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
 import org.springframework.http.codec.ServerCodecConfigurer
+import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.result.view.ViewResolver
 
 @Configuration
@@ -62,13 +63,13 @@ import org.springframework.web.reactive.result.view.ViewResolver
 @EnableConfigurationProperties(SpringCloudGatewayLoggingProperties::class)
 class SpringCloudGatewayLoggingAutoConfig {
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(CommonLoggingUtils::class)
     fun getCommonLoggingUtils(
     ): CommonLoggingUtils {
         return CommonLoggingUtils()
     }
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(SpringCloudGatewayLoggingUtils::class)
     fun getSpringCloudGatewayLoggingUtils(
         props:SpringCloudGatewayLoggingProperties,
         commonLoggingUtils: CommonLoggingUtils
@@ -78,7 +79,7 @@ class SpringCloudGatewayLoggingAutoConfig {
     }
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(SpringCloudGatewayLoggingFilter::class)
     fun getSpringCloudGatewayLoggingFilter(
         props:SpringCloudGatewayLoggingProperties,
         springCloudGatewayLoggingUtils: SpringCloudGatewayLoggingUtils,
@@ -88,6 +89,7 @@ class SpringCloudGatewayLoggingAutoConfig {
 
     @Bean
     @Order(-1)
+    @ConditionalOnMissingBean(SpringCloudGatewayLoggingErrorWebExceptionHandler::class)
     fun getSpringCloudGatewayLoggingErrorWebExceptionHandler(
         props:SpringCloudGatewayLoggingProperties,
         errorAttributes: ErrorAttributes,
