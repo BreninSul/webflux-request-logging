@@ -23,13 +23,10 @@
  *
  */
 
-package com.github.breninsul.webfluxlogging.client
+package io.github.breninsul.webfluxlogging.client
 
-import com.github.breninsul.webfluxlogging.CommonLoggingUtils
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.AutoConfiguration
+import io.github.breninsul.webfluxlogging.CommonLoggingUtils
 import org.springframework.boot.autoconfigure.AutoConfigureOrder
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -38,21 +35,21 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
 import org.springframework.web.reactive.function.client.WebClient
+
 @Configuration
 @ConditionalOnClass(WebClient::class)
 @ConditionalOnProperty(
     prefix = "webflux.logging.webclient",
     name = ["disabled"],
     matchIfMissing = true,
-    havingValue = "false"
+    havingValue = "false",
 )
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 @EnableConfigurationProperties(WebClientLoggingProperties::class)
 class WebClientLoggingAutoConfig {
     @Bean
     @ConditionalOnMissingBean(CommonLoggingUtils::class)
-    fun getCommonLoggingUtils(
-    ): CommonLoggingUtils {
+    fun getCommonLoggingUtils(): CommonLoggingUtils {
         return CommonLoggingUtils()
     }
 
@@ -60,25 +57,21 @@ class WebClientLoggingAutoConfig {
     @ConditionalOnMissingBean(WebClientLoggingUtils::class)
     fun getWebClientLoggingUtils(
         props: WebClientLoggingProperties,
-        commonLoggingUtils: CommonLoggingUtils
+        commonLoggingUtils: CommonLoggingUtils,
     ): WebClientLoggingUtils {
-        val logger=java.util.logging.Logger.getLogger(props.loggerClass)
-        return WebClientLoggingUtils(props.maxBodySize, logger,props.getLoggingLevelAsJavaLevel(), props.logTime, props.logHeaders, props.logBody, commonLoggingUtils)
+        val logger = java.util.logging.Logger.getLogger(props.loggerClass)
+        return WebClientLoggingUtils(props.maxBodySize, logger, props.getLoggingLevelAsJavaLevel(), props.logTime, props.logHeaders, props.logBody, commonLoggingUtils)
     }
 
     @Bean
     @ConditionalOnMissingBean(WebClientLoggingExchangeFilterFunction::class)
-    fun getWebClientLoggingExchangeFilterFunction(
-        loggingUtils: WebClientLoggingUtils
-    ): WebClientLoggingExchangeFilterFunction {
+    fun getWebClientLoggingExchangeFilterFunction(loggingUtils: WebClientLoggingUtils): WebClientLoggingExchangeFilterFunction {
         return WebClientLoggingExchangeFilterFunction(loggingUtils)
     }
 
     @Bean
     @ConditionalOnMissingBean(WebClient::class)
-    fun getWebClientLogging(
-        filter: WebClientLoggingExchangeFilterFunction
-    ): WebClient {
+    fun getWebClientLogging(filter: WebClientLoggingExchangeFilterFunction): WebClient {
         return WebClient
             .builder()
             .filter(filter)

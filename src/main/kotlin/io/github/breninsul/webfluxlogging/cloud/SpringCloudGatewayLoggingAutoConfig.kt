@@ -23,16 +23,10 @@
  *
  */
 
-package com.github.breninsul.webfluxlogging.cloud
+package io.github.breninsul.webfluxlogging.cloud
 
-import com.github.breninsul.webfluxlogging.CommonLoggingUtils
-import com.github.breninsul.webfluxlogging.client.WebClientLoggingProperties
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.slf4j.event.Level
+import io.github.breninsul.webfluxlogging.CommonLoggingUtils
 import org.springframework.beans.factory.ObjectProvider
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -48,7 +42,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
 import org.springframework.http.codec.ServerCodecConfigurer
-import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.result.view.ViewResolver
 
 @Configuration
@@ -57,41 +50,41 @@ import org.springframework.web.reactive.result.view.ViewResolver
     prefix = "webflux.logging.gateway",
     name = arrayOf("disabled"),
     matchIfMissing = true,
-    havingValue = "false"
+    havingValue = "false",
 )
 @AutoConfigureBefore(ErrorWebFluxAutoConfiguration::class)
 @EnableConfigurationProperties(SpringCloudGatewayLoggingProperties::class)
 class SpringCloudGatewayLoggingAutoConfig {
     @Bean
     @ConditionalOnMissingBean(CommonLoggingUtils::class)
-    fun getCommonLoggingUtils(
-    ): CommonLoggingUtils {
+    fun getCommonLoggingUtils(): CommonLoggingUtils {
         return CommonLoggingUtils()
     }
+
     @Bean
     @ConditionalOnMissingBean(SpringCloudGatewayLoggingUtils::class)
     fun getSpringCloudGatewayLoggingUtils(
-        props:SpringCloudGatewayLoggingProperties,
-        commonLoggingUtils: CommonLoggingUtils
-        ): SpringCloudGatewayLoggingUtils {
-        val logger=java.util.logging.Logger.getLogger(props.loggerClass)
-        return SpringCloudGatewayLoggingUtils(props.maxBodySize,logger,props.getLoggingLevelAsJavaLevel(),props.logTime,props.logHeaders,props.logBody,commonLoggingUtils)
+        props: SpringCloudGatewayLoggingProperties,
+        commonLoggingUtils: CommonLoggingUtils,
+    ): SpringCloudGatewayLoggingUtils {
+        val logger = java.util.logging.Logger.getLogger(props.loggerClass)
+        return SpringCloudGatewayLoggingUtils(props.maxBodySize, logger, props.getLoggingLevelAsJavaLevel(), props.logTime, props.logHeaders, props.logBody, commonLoggingUtils)
     }
 
     @Bean
     @ConditionalOnMissingBean(SpringCloudGatewayLoggingFilter::class)
     fun getSpringCloudGatewayLoggingFilter(
-        props:SpringCloudGatewayLoggingProperties,
+        props: SpringCloudGatewayLoggingProperties,
         springCloudGatewayLoggingUtils: SpringCloudGatewayLoggingUtils,
-        ): SpringCloudGatewayLoggingFilter {
-        return SpringCloudGatewayLoggingFilter(props.addIdHeader,springCloudGatewayLoggingUtils )
+    ): SpringCloudGatewayLoggingFilter {
+        return SpringCloudGatewayLoggingFilter(props.addIdHeader, springCloudGatewayLoggingUtils)
     }
 
     @Bean
     @Order(-1)
     @ConditionalOnMissingBean(SpringCloudGatewayLoggingErrorWebExceptionHandler::class)
     fun getSpringCloudGatewayLoggingErrorWebExceptionHandler(
-        props:SpringCloudGatewayLoggingProperties,
+        props: SpringCloudGatewayLoggingProperties,
         errorAttributes: ErrorAttributes,
         webProperties: WebProperties,
         viewResolvers: ObjectProvider<ViewResolver>,
@@ -99,8 +92,8 @@ class SpringCloudGatewayLoggingAutoConfig {
         applicationContext: AnnotationConfigReactiveWebServerApplicationContext,
         serverProperties: ServerProperties,
         utils: SpringCloudGatewayLoggingUtils,
-        ): SpringCloudGatewayLoggingErrorWebExceptionHandler {
-        val handler= SpringCloudGatewayLoggingErrorWebExceptionHandler(props.addIdHeader,utils,errorAttributes,webProperties.resources,serverProperties.error,applicationContext)
+    ): SpringCloudGatewayLoggingErrorWebExceptionHandler {
+        val handler = SpringCloudGatewayLoggingErrorWebExceptionHandler(props.addIdHeader, utils, errorAttributes, webProperties.resources, serverProperties.error, applicationContext)
         handler.setViewResolvers(viewResolvers.orderedStream().toList())
         handler.setMessageWriters(serverCodecConfigurer.writers)
         handler.setMessageReaders(serverCodecConfigurer.readers)

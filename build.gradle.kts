@@ -27,59 +27,42 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("java-library")
-    id("maven-publish")
-    id("org.springframework.boot") version "3.2.1"
+    id("net.thebugmc.gradle.sonatype-central-portal-publisher") version "1.1.1"
+    id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.4"
     id("org.jetbrains.kotlin.jvm") version "1.9.22"
     id("org.jetbrains.kotlin.plugin.spring") version "1.9.22"
     id("org.jetbrains.kotlin.kapt") version "1.9.22"
 }
-group = "com.github.breninsul"
-version = "1.1.03"
-java.sourceCompatibility = JavaVersion.VERSION_21
+val springBootVersion = "3.2.2"
+val kotlinVersion = "1.9.22"
+val springCloudGatewayVersion="4.1.1"
+val javaVersion = JavaVersion.VERSION_17
 
+group = "io.github.breninsul"
+version = "1.1.05"
+java.sourceCompatibility = javaVersion
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://jitpack.io") }
 }
 java {
     withSourcesJar()
+    withJavadocJar()
 }
-publishing {
-    publications {
-        register<MavenPublication>("release") {
-            groupId = project.group.toString()
-            artifactId = rootProject.name
-            version = project.version.toString()
-            val softwareComponent = components.first()
-            from(softwareComponent)
-        }
 
-    }
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/BreninSul/webflux-request-logging")
-            credentials {
-                username = "${System.getenv()["GIHUB_PACKAGE_USERNAME"]}"
-                password = "${System.getenv()["GIHUB_PACKAGE_TOKEN"]}"
-            }
-        }
-    }
-}
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "21"
+        jvmTarget = javaVersion.majorVersion
     }
 }
-tasks.compileJava{
+tasks.compileJava {
     val dependsOn = dependsOn
     dependsOn.add(tasks.processResources)
 }
-tasks.compileKotlin{
+tasks.compileKotlin {
     dependsOn.add(tasks.processResources)
 }
 
@@ -87,11 +70,9 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-
 dependencies {
-    implementation("com.github.jitpack:gradle-simple:1.1")
-    implementation("org.springframework.boot:spring-boot-starter-webflux:")
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.1.0")
+    implementation("org.springframework.boot:spring-boot-starter-webflux:$springBootVersion")
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway:$springCloudGatewayVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     annotationProcessor("org.apache.logging.log4j:log4j-core")
     annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
@@ -101,3 +82,35 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
+signing {
+    useGpgCmd()
+}
+
+centralPortal {
+    pom {
+        packaging = "jar"
+        name.set("BreninSul Spring Boot Strater for Webflux logging filters (Cloud Gateway and WebClient)")
+        val gitProjectName = "webflux-request-logging"
+        url.set("https://github.com/BreninSul/$gitProjectName")
+        description.set("BreninSul Spring Boot Strater for Webflux logging filters (Cloud Gateway and WebClient)")
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("http://opensource.org/licenses/MIT")
+            }
+        }
+        scm {
+            connection.set("scm:https://github.com/BreninSul/$gitProjectName.git")
+            developerConnection.set("scm:git@github.com:BreninSul/$gitProjectName.git")
+            url.set("https://github.com/BreninSul/$gitProjectName")
+        }
+        developers {
+            developer {
+                id.set("BreninSul")
+                name.set("BreninSul")
+                email.set("brenimnsul@gmail.com")
+                url.set("breninsul.github.io")
+            }
+        }
+    }
+}

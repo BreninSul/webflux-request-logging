@@ -23,22 +23,42 @@
  *
  */
 
-package com.github.breninsul.webfluxlogging.client
+package io.github.breninsul.webfluxlogging.cloud
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import java.util.logging.Level
 
-@ConfigurationProperties(prefix = "webflux.logging.webclient")
-data class WebClientLoggingProperties(
+/**
+ * Class for managing Spring Cloud Gateway logging properties.
+ *
+ * @property maxBodySize Maximum size of the body that will be logged. Default is 10000.
+ * @property addIdHeader Boolean flag to decide if an identification header should be added. Default is true.
+ * @property logTime Boolean flag to decide if logging the time is needed. Default is true.
+ * @property logHeaders Boolean flag to decide if logging the headers is needed. Default is true.
+ * @property logBody Boolean flag to decide if logging the body is needed. Default is true.
+ * @property loggingLevel Level of logging. Default is "INFO".
+ * @property loggerClass Logger class to be used for logging. Default is "io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter".
+ * @property disabled Boolean flag to switch off the logging. Default is false.
+ *
+ * @constructor Create a new logging properties object.
+ */
+@ConfigurationProperties(prefix = "webflux.logging.gateway")
+data class SpringCloudGatewayLoggingProperties(
     var maxBodySize: Int = 10000,
+    var addIdHeader: Boolean = true,
     var logTime: Boolean = true,
     var logHeaders: Boolean = true,
     var logBody: Boolean = true,
     var loggingLevel: String = "INFO",
-    var loggerClass: String ="org.springframework.web.reactive.function.client.WebClient",
-    var disabled :Boolean = false,
-    ){
-    fun getLoggingLevelAsJavaLevel():Level{
+    var loggerClass: String = "io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter",
+    var disabled: Boolean = false,
+) {
+    /**
+     * This function is used to get the logging level as Java level.
+     *
+     * @return The logging level as Java Level object.
+     */
+    fun getLoggingLevelAsJavaLevel(): Level {
         return Level.parse(loggingLevel)
     }
 }

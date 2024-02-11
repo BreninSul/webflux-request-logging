@@ -23,44 +23,72 @@
  *
  */
 
-package com.github.breninsul.webfluxlogging.client
+package io.github.breninsul.webfluxlogging.client
 
-import com.github.breninsul.webfluxlogging.CommonLoggingUtils
-import org.slf4j.spi.LoggingEventBuilder
+import io.github.breninsul.webfluxlogging.CommonLoggingUtils
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.core.io.buffer.DataBuffer
-import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import java.util.logging.Level
 import java.util.logging.Logger
 
-open class WebClientLoggingUtils (
+/**
+ * Utility class providing logging functionalities for WebClient-based communication.
+ *
+ * @property maxBodySize The maximum body size to log
+ * @property logger The logger to use
+ * @property loggingLevel The logging level to use
+ * @property logTime Flag indicating if request/response durations should be logged.
+ * @property logHeaders Flag indicating if request/response headers should be logged.
+ * @property logBody Flag indicating if request/response bodies should be logged.
+ * @property commonUtils An instance of [CommonLoggingUtils] for utility operations
+ */
+open class WebClientLoggingUtils(
     protected val maxBodySize: Int,
     protected val logger: Logger,
-    protected val loggingLevel:Level,
-    protected val logTime:Boolean,
+    protected val loggingLevel: Level,
+    protected val logTime: Boolean,
     protected val logHeaders: Boolean,
     protected val logBody: Boolean,
-    protected val commonUtils:CommonLoggingUtils = CommonLoggingUtils()) {
+    protected val commonUtils: CommonLoggingUtils = CommonLoggingUtils(),
+) {
+    /**
+     * Provides an instance of [CommonLoggingUtils].
+     * If there's no bean of [CommonLoggingUtils] defined, a new instance will be created.
+     *
+     * @return an instance of [CommonLoggingUtils]
+     */
     @Bean
     @ConditionalOnMissingBean
-    fun getCommonLoggingUtils(
-    ): CommonLoggingUtils {
+    fun getCommonLoggingUtils(): CommonLoggingUtils {
         return CommonLoggingUtils()
     }
+
+    /**
+     * Logs a [ClientRequest] and its associated data
+     *
+     * @param request The request to log
+     * @param data The associated data to log
+     */
     open fun writeRequest(
         request: ClientRequest,
-        data: DataBuffer?
+        data: DataBuffer?,
     ) {
-        writeRequest(request,commonUtils.getContent(data,maxBodySize))
+        writeRequest(request, commonUtils.getContent(data, maxBodySize))
     }
+
+    /**
+     * Logs a [ClientRequest] and its associated data
+     *
+     * @param request The request to log
+     * @param data The associated data, as a string, to log
+     */
     protected open fun writeRequest(
         request: ClientRequest,
         data: String?,
     ) {
-
         val headersString = if (logHeaders) ("\n=Headers      : ${commonUtils.getHeadersContent(request.headers())}") else ""
         val bodyString = if (logBody) ("\n=Body         : ${commonUtils.getBodyContent(data, maxBodySize)}") else ""
         val logString =
@@ -69,34 +97,52 @@ open class WebClientLoggingUtils (
 =ID           : ${request.logPrefix()}
 =URI          : ${request.method()} ${request.url()}$headersString$bodyString
 ===========================WebClient request end   ==========================
-""".trimMargin()
-        logger.log(loggingLevel,logString)
+            """.trimMargin()
+        logger.log(loggingLevel, logString)
     }
+
+    /**
+     * Logs a [ClientRequest]'s response and its associated data
+     *
+     * @param request The original request
+     * @param response The response to log
+     * @param data The associated data to log
+     * @param startTime The start time of the request, for logging duration
+     */
     open fun writeResponse(
         request: ClientRequest,
         response: ClientResponse,
         data: DataBuffer?,
-        startTime: Long
+        startTime: Long,
     ) {
-        writeResponse(request,response,commonUtils.getContent(data,maxBodySize),startTime)
+        writeResponse(request, response, commonUtils.getContent(data, maxBodySize), startTime)
     }
+
+    /**
+     * Logs a [ClientRequest]'s response and its associated data
+     *
+     * @param request The original request
+     * @param response The response to log
+     * @param data The associated data, as a string, to log
+     * @param startTime The start time of the request, for logging duration
+     */
     protected open fun writeResponse(
         request: ClientRequest,
         response: ClientResponse,
         data: String?,
-        startTime: Long
+        startTime: Long,
     ) {
-        val timeString= if (logTime) ("\n=Took         : ${System.currentTimeMillis() - startTime} ms") else ""
+        val timeString = if (logTime) ("\n=Took         : ${System.currentTimeMillis() - startTime} ms") else ""
         val headersString = if (logHeaders) ("\n=Headers      : ${commonUtils.getHeadersContent(response.headers().asHttpHeaders())}") else ""
         val bodyString = if (logBody) ("\n=Body         : ${commonUtils.getBodyContent(data, maxBodySize)}") else ""
-        val logString = """
+        val logString =
+            """
 
-===========================WebClient response begin===========================
-=ID           : ${request.logPrefix()}
-=URI          : ${response.statusCode()} ${request.method()} ${request.url()}$timeString$headersString$bodyString
-===========================WebClient response end   ==========================""".trimIndent()
+            ===========================WebClient response begin===========================
+            =ID           : ${request.logPrefix()}
+            =URI          : ${response.statusCode()} ${request.method()} ${request.url()}$timeString$headersString$bodyString
+            ===========================WebClient response end   ==========================
+            """.trimIndent()
         logger.log(loggingLevel, logString)
     }
-
-
 }

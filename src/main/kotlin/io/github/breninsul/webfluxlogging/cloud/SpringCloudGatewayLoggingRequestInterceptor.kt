@@ -23,9 +23,8 @@
  *
  */
 
-package com.github.breninsul.webfluxlogging.cloud
+package io.github.breninsul.webfluxlogging.cloud
 
-import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.HttpMethod
@@ -35,27 +34,41 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
+/**
+ * Interceptor for logging HTTP request information in Spring Cloud Gateway.
+ * It's a decorator over `ServerHttpRequest` which intercepts the body of
+ * incoming requests and logs relevant information.
+ * This interceptor employs Spring's `ServerHttpRequestDecorator` to integrate
+ * smoothly within the reactive WebFlux infrastructure.
+ *
+ * @param delegateRq the original ServerHttpRequest which will be augmented by this decorator.
+ * @param loggingUtils utility instance for logging operations.
+ */
 open class SpringCloudGatewayLoggingRequestInterceptor(
     protected val delegateRq: ServerHttpRequest,
     protected val loggingUtils: SpringCloudGatewayLoggingUtils,
 ) : ServerHttpRequestDecorator(delegateRq) {
+    // Override to get the body of request and implement the logging logic
     override fun getBody(): Flux<DataBuffer> {
-        val flux = DataBufferUtils.join(super
-            .getBody())
-            .publishOn(Schedulers.boundedElastic())
-            .switchIfEmpty (
-                Mono.defer {
-                    loggingUtils.writeRequest(delegateRq, null as DataBuffer?)
-                    Mono.empty<DataBuffer>()
-                }
+        val flux =
+            DataBufferUtils.join(
+                super
+                    .getBody(),
             )
-            .doOnNext { dataBuffer: DataBuffer ->
-                try {
-                    loggingUtils.writeRequest(delegateRq, dataBuffer)
-                } catch (e: Throwable) {
-                    loggingUtils.log("Error in request filter", e)
-                }
-            }.flux()
+                .publishOn(Schedulers.boundedElastic())
+                .switchIfEmpty(
+                    Mono.defer {
+                        loggingUtils.writeRequest(delegateRq, null as DataBuffer?)
+                        Mono.empty<DataBuffer>()
+                    },
+                )
+                .doOnNext { dataBuffer: DataBuffer ->
+                    try {
+                        loggingUtils.writeRequest(delegateRq, dataBuffer)
+                    } catch (e: Throwable) {
+                        loggingUtils.log("Error in request filter", e)
+                    }
+                }.flux()
         return if (delegateRq.method == HttpMethod.GET) {
             val cached = flux.cache()
             cached.subscribeOn(Schedulers.boundedElastic()).subscribe()
@@ -64,6 +77,4 @@ open class SpringCloudGatewayLoggingRequestInterceptor(
             flux
         }
     }
-
-
 }

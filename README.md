@@ -5,31 +5,12 @@ This module provides query logging for
 1) Spring Cloud Gateway
 2) Spring WebFlux WebClient
 
-To connect, just connect the repository
-````
-```
-repositories {
-    mavenCentral()
-    ....
-   maven {
-        name = "GitHub"
-        url = uri("https://maven.pkg.github.com/BreninSul/webflux-request-logging")
-        credentials {
-            username = "GIHUB_PACKAGE_USERNAME" // GIHUB_PACKAGE_USERNAME - your github personal access token username.
-            password = "GIHUB_PACKAGE_TOKEN" // GIHUB_PACKAGE_TOKEN - your github personal access token.
-        }
-    }
-    ...
-}
-```
-````
-
-And add lib as dependency
+To use this lid, just add it as dependency
 ````
 ```
 dependencies {
     ...
-    implementation("com.github.breninsul:webflux-logging:1.1.01")
+    implementation("io.github.breninsul:webflux-logging:${verison}")
     ...
 }
 
@@ -47,7 +28,7 @@ Spring Cloud Gateway:
 | <sub><sup><sub><sup>webflux.logging.gateway.log-headers  </sup></sub></sup></sub> | <sub><sup>                                  TRUE                                   </sup></sub> | <sub><sup>                                      Log headers                                      </sup></sub> |
 | <sub><sup><sub><sup>webflux.logging.gateway.log-body    </sup></sub></sup></sub> | <sub><sup>                                  TRUE                                   </sup></sub> | <sub><sup>                                       Log body                                        </sup></sub> |
 | <sub><sup><sub><sup>webflux.logging.gateway.level     </sup></sub></sup></sub> | <sub><sup>                                  INFO                                   </sup></sub> | <sub><sup>                              Level for logging messages                               </sup></sub> |
-| <sub><sup><sub><sup>webflux.logging.gateway.logger     </sup></sub></sup></sub> | <sub><sup>com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter</sup></sub> | <sub><sup>                                   Class for logger                                    </sup></sub> |
+| <sub><sup><sub><sup>webflux.logging.gateway.logger     </sup></sub></sup></sub> | <sub><sup>io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter</sup></sub> | <sub><sup>                                   Class for logger                                    </sup></sub> |
 | <sub><sup><sub><sup>webflux.logging.gateway.disabled        </sup></sub></sup></sub> | <sub><sup>                                  FALSE                                  </sup></sub> | <sub><sup>Disable autoconfiguration (register Filter as bean) Spring Cloud Gateway logging filter</sup></sub> |
 
 Spring WebFlux WebClient:

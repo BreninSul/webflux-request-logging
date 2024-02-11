@@ -23,25 +23,39 @@
  *
  */
 
-package com.github.breninsul.webfluxlogging.cloud
+package io.github.breninsul.webfluxlogging.client
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
 import java.util.logging.Level
-
-@ConfigurationProperties(prefix = "webflux.logging.gateway")
-data class SpringCloudGatewayLoggingProperties(
+/**
+ * WebClientLoggingProperties includes several configurable properties related to WebClient logging level,
+ * such as maximum body size, whether to log headers, body, and time, logging level, logger class, and
+ * whether logging is disabled.
+ *
+ * @property maxBodySize the maximum body size to be logged.
+ * @property logTime a flag indicating whether the time should be logged.
+ * @property logHeaders a flag indicating whether the headers should be logged.
+ * @property logBody a flag indicating whether the body should be logged.
+ * @property loggingLevel the logging level.
+ * @property loggerClass the logger class to be used for logging.
+ * @property disabled a flag indicating whether the logging is disabled.
+ */
+@ConfigurationProperties(prefix = "webflux.logging.webclient")
+data class WebClientLoggingProperties(
     var maxBodySize: Int = 10000,
-    var addIdHeader:Boolean = true,
     var logTime: Boolean = true,
     var logHeaders: Boolean = true,
     var logBody: Boolean = true,
     var loggingLevel: String = "INFO",
-    var loggerClass: String = "com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter",
-    var disabled :Boolean = false,
-){
-    fun getLoggingLevelAsJavaLevel():Level{
+    var loggerClass: String = "org.springframework.web.reactive.function.client.WebClient",
+    var disabled: Boolean = false,
+) {
+    /**
+     * Converts the logging level string into java.util.logging.Level.
+     *
+     * @return java.util.logging.Level object representing the logging level.
+     */
+    fun getLoggingLevelAsJavaLevel(): Level {
         return Level.parse(loggingLevel)
     }
-
 }

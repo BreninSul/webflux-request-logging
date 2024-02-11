@@ -23,50 +23,63 @@
  *
  */
 
-package com.github.breninsul.webfluxlogging.cloud
+package io.github.breninsul.webfluxlogging.cloud
 
 import org.reactivestreams.Publisher
-import org.slf4j.spi.LoggingEventBuilder
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
+/**
+ * Class for implementing response interceptor in Spring cloud gateway with logging.
+ *
+ * @property addIdHeader If true, adds a header with request id to the response.
+ * @property delegateRs The original response to which operations will be delegated.
+ * @property delegateRq The request to get details from.
+ * @property startTime The time when the request was received.
+ * @property utils Helper utilities for logging.
+ * @property idHeader The name of the header where request id is specified.
+ */
 open class SpringCloudGatewayLoggingResponseInterceptor(
     protected val addIdHeader: Boolean,
     protected val delegateRs: ServerHttpResponse,
     protected val delegateRq: ServerHttpRequest,
     protected val startTime: Long?,
     protected val utils: SpringCloudGatewayLoggingUtils,
-    protected val idHeader:String = "X-Request-Id"
-    ) :
+    protected val idHeader: String = "X-Request-Id",
+) :
     ServerHttpResponseDecorator(delegateRs) {
-
-
+    /**
+     * Handler method for response's body.
+     *
+     * @param body The response's body.
+     * @return Mono<Void> for chaining the response.
+     */
     override fun writeWith(body: Publisher<out DataBuffer>): Mono<Void> {
         if (addIdHeader) {
             delegateRs.headers.add(idHeader, delegateRq.id)
         }
         val buffer = DataBufferUtils.join(body)
-        val dataBufferFlux = buffer
-            .publishOn(Schedulers.boundedElastic())
-            .switchIfEmpty (
-               Mono.defer {
-                    utils.writeResponse(delegateRq, delegateRs, null as DataBuffer?, startTime)
-                    return@defer Mono.empty< DataBuffer>()
-                } as Mono<DataBuffer>
-            )
-            .doOnNext { dataBuffer: DataBuffer ->
-                try {
-                    utils.writeResponse(delegateRq, delegateRs, dataBuffer, startTime)
-                } catch (e: Throwable) {
-                    utils.log("Error in response filter", e)
+        val dataBufferFlux =
+            buffer
+                .publishOn(Schedulers.boundedElastic())
+                .switchIfEmpty(
+                    Mono.defer {
+                        utils.writeResponse(delegateRq, delegateRs, null as DataBuffer?, startTime)
+                        return@defer Mono.empty<DataBuffer>()
+                    } as Mono<DataBuffer>,
+                )
+                .doOnNext { dataBuffer: DataBuffer ->
+                    try {
+                        utils.writeResponse(delegateRq, delegateRs, dataBuffer, startTime)
+                    } catch (e: Throwable) {
+                        utils.log("Error in response filter", e)
+                    }
                 }
-            }
         return super.writeWith(dataBufferFlux)
     }
 }

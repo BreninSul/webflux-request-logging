@@ -1,3 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.github.breninsul.webfluxlogging.client.WebClientLoggingAutoConfig,\
-com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingAutoConfig
+io.github.breninsul.webfluxlogging.client.WebClientLoggingAutoConfig,\
+io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingAutoConfig

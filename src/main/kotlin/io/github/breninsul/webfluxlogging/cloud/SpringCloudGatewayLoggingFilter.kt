@@ -23,7 +23,7 @@
  *
  */
 
-package com.github.breninsul.webfluxlogging.cloud
+package io.github.breninsul.webfluxlogging.cloud
 
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.cloud.gateway.filter.GlobalFilter
@@ -32,43 +32,67 @@ import org.springframework.http.MediaType
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
-
+/**
+ * A logging filter for Spring Cloud Gateway. The filter logs the HTTP request and response data.
+ *
+ * @property addIdHeader Whether to add a unique request ID header to each request.
+ * @property utils HTTP logging utilities.
+ * @property orderValue The order value of this filter.
+ * @property idHeader The name of the request ID header.
+ * @property startTimeAttribute The attribute key for the request start time.
+ */
 open class SpringCloudGatewayLoggingFilter(
     protected val addIdHeader: Boolean,
-    protected val utils:SpringCloudGatewayLoggingUtils,
+    protected val utils: SpringCloudGatewayLoggingUtils,
     protected val orderValue: Int = Int.MIN_VALUE,
-    protected val idHeader:String = "X-Request-Id",
-    protected val startTimeAttribute:String = "startTime",
-    ) : GlobalFilter, Ordered {
-
+    protected val idHeader: String = "X-Request-Id",
+    protected val startTimeAttribute: String = "startTime",
+) : GlobalFilter, Ordered {
+    /**
+     * Returns the order of this filter in the execution chain.
+     *
+     * @return the order value.
+     */
     override fun getOrder(): Int {
         return orderValue
     }
 
-    override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
+    /**
+     * Processes a HTTP request/response exchange.
+     *
+     * @param exchange the current server-side HTTP exchange.
+     * @param chain provides a way to delegate to the next filter in the chain.
+     * @return a `Publisher<Void>` that signals when request handling is complete.
+     */
+    override fun filter(
+        exchange: ServerWebExchange,
+        chain: GatewayFilterChain,
+    ): Mono<Void> {
         exchange.attributes[startTimeAttribute] = System.currentTimeMillis()
         val withId = if (addIdHeader) exchange.request.mutate().header(idHeader, exchange.request.id).build() else exchange.request
         val contentType = withId.headers.contentType
         val isMultipart = contentType?.includes(MediaType.MULTIPART_FORM_DATA) ?: false
-        val requestWithFilter = SpringCloudGatewayLoggingRequestInterceptor( withId,utils)
-        val responseWithFilter = SpringCloudGatewayLoggingResponseInterceptor(
-            addIdHeader,
-            exchange.response,
-            withId,
-            exchange.attributes[startTimeAttribute] as Long?,
-            utils
-        )
-        val loggingWebExchange = exchange.mutate()
-            .request(requestWithFilter)
-            .response(responseWithFilter)
-            .build()
+        val requestWithFilter = SpringCloudGatewayLoggingRequestInterceptor(withId, utils)
+        val responseWithFilter =
+            SpringCloudGatewayLoggingResponseInterceptor(
+                addIdHeader,
+                exchange.response,
+                withId,
+                exchange.attributes[startTimeAttribute] as Long?,
+                utils,
+            )
+        val loggingWebExchange =
+            exchange.mutate()
+                .request(requestWithFilter)
+                .response(responseWithFilter)
+                .build()
         if (isMultipart) {
-            val log = exchange.multipartData.flatMap { utils.getPartsContent(it) }.doOnNext { data ->
-                utils.writeRequest(withId,data)
-            }
+            val log =
+                exchange.multipartData.flatMap { utils.getPartsContent(it) }.doOnNext { data ->
+                    utils.writeRequest(withId, data)
+                }
             return log.and(chain.filter(loggingWebExchange))
         }
         return chain.filter(loggingWebExchange)
     }
-
 }
