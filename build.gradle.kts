@@ -40,7 +40,7 @@ val springCloudGatewayVersion="4.1.1"
 val javaVersion = JavaVersion.VERSION_17
 
 group = "io.github.breninsul"
-version = "1.1.05"
+version = "1.1.0.6"
 java.sourceCompatibility = javaVersion
 
 repositories {
@@ -113,4 +113,9 @@ centralPortal {
             }
         }
     }
+}
+
+tasks.jar {
+    enabled = true
+    archiveClassifier.set("")
 }
